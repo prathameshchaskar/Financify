@@ -1,12 +1,14 @@
 import {
   createUserWithEmailAndPassword,
+  GoogleAuthProvider,
   signInWithEmailAndPassword,
+  signInWithPopup,
 } from "firebase/auth";
 import React, { useState } from "react";
 import { Button } from "../Button";
 import Input from "../Input";
 import "./styles.css";
-import { auth, db } from "../../firebase";
+import { auth, db, provider } from "../../firebase";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { doc, getDoc, setDoc } from "firebase/firestore";
@@ -71,7 +73,7 @@ export const SignupSigninComponent = () => {
         .then((userCredential) => {
           // Signed in
           const user = userCredential.user;
-          toast.success("User Logged  In!")
+          toast.success("User Logged  In!");
           setLoading(false);
           createDoc(user);
           navigate("/dashboard");
@@ -90,20 +92,19 @@ export const SignupSigninComponent = () => {
     }
   };
 
-
-  const createDoc = async(user) => {
+  const createDoc = async (user) => {
     setLoading(true);
     //Create a doc
-    if(!user) return;
+    if (!user) return;
 
     const useRef = doc(db, "users", user.uid);
     const userData = await getDoc(useRef);
-    if(!userData.exists()) {
+    if (!userData.exists()) {
       try {
         await setDoc(doc(db, "users", user.uid), {
           name: user.displayName ? user.displayName : name,
           email: user.email,
-          photoURl: user.photoURl ? user.photoURL : "",
+          photoURL: user.photoURL ? user.photoURL : "",
           createdAt: new Date(),
         });
         setLoading(false);
@@ -116,8 +117,40 @@ export const SignupSigninComponent = () => {
       toast.error("Doc already exists");
       setLoading(false);
     }
-  }
+  };
 
+  const googleAuth = () => {
+    setLoading(true);
+    try {
+      signInWithPopup(auth, provider)
+        .then((result) => {
+          // This gives you a Google Access Token. You can use it to access the Google API.
+          const credential = GoogleAuthProvider.credentialFromResult(result);
+          const token = credential.accessToken;
+          // The signed-in user info.
+          const user = result.user;
+          console.log("user", user);
+          createDoc(user);
+          setLoading(false);
+          navigate("/dashboard");
+          toast.success("User Authenticated!");
+          // IdP data available using getAdditionalUserInfo(result)
+          // ...
+        })
+        .catch((error) => {
+          // Handle Errors here.
+          setLoading(false);
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          toast.error(errorMessage);
+          
+          // ...
+        });
+    } catch (e) {
+      toast.error(e.message);
+      setLoading(false);
+    }
+  };
 
   return (
     <>
@@ -151,6 +184,7 @@ export const SignupSigninComponent = () => {
             <Button
               text={loading ? "Loading..." : "Login Using Google"}
               blue={true}
+              onClick={() => googleAuth()}
             />
             <p
               className="p-login link"
@@ -204,6 +238,7 @@ export const SignupSigninComponent = () => {
             <Button
               text={loading ? "Loading..." : "Signup Using Google"}
               blue={true}
+              onClick={() => googleAuth()}
             />
             <p
               className="p-login link"
