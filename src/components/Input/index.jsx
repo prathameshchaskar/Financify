@@ -1,11 +1,12 @@
 import React from "react";
 import "./styles.css"
 
-const Input = ({label, state, setState, placeholder}) => {
+const Input = ({type, label, state, setState, placeholder}) => {
   return (
     <div className="input-wrapper">
       <p className="label-input">{label}</p>
       <input 
+        type={type}
         value={state} 
         placeholder={placeholder} 
         onChange={(e) => setState(e.target.value)}
