@@ -13,11 +13,14 @@ import { addDoc, collection, doc, getDocs, query } from "firebase/firestore";
 const Dashboard = () => {
   const [user] = useAuthState(auth);
 
-  const [transaction, setTransaction] = useState([]);
+  const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const [isIncomeModalVisible, setIsIncomeModalVisible] = useState(false);
   const [isExpenseModalVisible, setIsExpenseModalVisible] = useState(false);
+  const [income, setIncome] = useState(0);
+  const [expense, setExpense] = useState(0);
+  const [totalBalance, setTotalBalance] = useState(0);
 
   const showIncomeModal = () => {
     setIsIncomeModalVisible(true);
@@ -54,6 +57,10 @@ const Dashboard = () => {
       );
       console.log("Document written with ID: ", docRef.id);
       toast.success("Transaction Added!");
+      let newArr = transactions;
+      newArr.push(transaction);
+      setTransactions(newArr);
+      calculateBalance();
     } catch (e) {
       console.error("Error adding document: ", e);
       toast.error("Couldn't add transaction");
@@ -63,6 +70,26 @@ const Dashboard = () => {
   useEffect(() => {
     fetchTransactions();
   }, []);
+
+  useEffect(() => {
+    calculateBalance();
+  }, [transactions]);
+
+  const calculateBalance = () => {
+    let incomeTotal = 0;
+    let expenseTotal = 0;
+
+    transactions.forEach((transaction) => {
+      if (transaction.type === "income") {
+        incomeTotal += transaction.amount;
+      } else {
+        expenseTotal += transaction.amount;
+      }
+    });
+    setIncome(incomeTotal);
+    setExpense(expenseTotal);
+    setTotalBalance(incomeTotal - expenseTotal);
+  };
 
   const fetchTransactions = async () => {
     setLoading(true);
@@ -74,7 +101,7 @@ const Dashboard = () => {
       querySnapshot.forEach((doc) => {
         transactionsArray.push(doc.data());
       });
-      setTransaction(transactionsArray);
+      setTransactions(transactionsArray);
       console.log("trasaction Array", transactionsArray);
       toast.success("Transaction Fetched!");
     }
@@ -89,6 +116,9 @@ const Dashboard = () => {
       ) : (
         <>
           <Cards
+            income={income}
+            expense={expense}
+            totalBalance={totalBalance}
             showIncomeModal={showIncomeModal}
             showExpenseModal={showExpenseModal}
           />
