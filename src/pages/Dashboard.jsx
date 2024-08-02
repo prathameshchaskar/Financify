@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Header } from "../components/Header";
 import { Cards } from "../components/Cards";
-import { Modal } from "antd";
 import AddExpenseModal from "../components/Modals/addExpense";
 import AddIncomeModal from "../components/Modals/addIncome";
-import moment from "moment";
 import { toast } from "react-toastify";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../firebase";
 import { addDoc, collection, doc, getDocs, query } from "firebase/firestore";
+import TransactionsTable from "../components/TransactionsTable";
 
 const Dashboard = () => {
   const [user] = useAuthState(auth);
@@ -41,7 +40,7 @@ const Dashboard = () => {
   const onFinish = (values, type) => {
     const newTransaction = {
       type: type,
-      date: moment(values.data).format("YYYY-MM-DD"),
+      date: values.date.format("YYYY-MM-DD"),
       amount: parseFloat(values.amount),
       tag: values.tag,
       names: values.name,
@@ -69,7 +68,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchTransactions();
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     calculateBalance();
@@ -132,6 +131,7 @@ const Dashboard = () => {
             handleIncomeCancel={handleIncomeCancel}
             onFinish={onFinish}
           />
+          <TransactionsTable transactions={transactions} />
         </>
       )}
     </div>
