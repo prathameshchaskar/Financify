@@ -5,6 +5,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { signOut } from "firebase/auth";
+import userSvg from "../../assets/user.svg"
 
 export const Header = () => {
   const [user, loading] = useAuthState(auth);
@@ -37,9 +38,18 @@ export const Header = () => {
     <div className="navbar">
       <p className="logo">Financify</p>
       {user && (
+        <div style={{display:"flex", alignItems:"center", gap:"1rem"}}>
+    
+            <img
+              src={user.photoURL ? user.photoURL : userSvg}
+              width={user.photoURL ? "30" : "24"}
+              style={{ borderRadius: "50%" }}
+            />
+         
         <p className="logo link" onClick={logoutFun}>
           Logout
         </p>
+        </div>
       )}
     </div>
   );
