@@ -43,7 +43,7 @@ const Dashboard = () => {
       date: values.date.format("YYYY-MM-DD"),
       amount: parseFloat(values.amount),
       tag: values.tag,
-      names: values.name,
+      name: values.name,
     };
     addTransaction(newTransaction);
   };
@@ -51,7 +51,7 @@ const Dashboard = () => {
   const addTransaction = async (transaction, many) => {
     try {
       const docRef = await addDoc(
-        collection(db, `users/${user.uid}/transation`),
+        collection(db, `users/${user.uid}/transactions`),
         transaction
       );
       console.log("Document written with ID: ", docRef.id);
@@ -94,7 +94,7 @@ const Dashboard = () => {
     setLoading(true);
     if (user) {
       const querySnapshot = await getDocs(
-        query(collection(db, `users/${user.uid}/transation`))
+        query(collection(db, `users/${user.uid}/transactions`))
       );
       let transactionsArray = [];
       querySnapshot.forEach((doc) => {

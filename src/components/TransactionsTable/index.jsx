@@ -16,8 +16,8 @@ const TransactionsTable = ({
   const columns = [
     {
       title: "Name",
-      dataIndex: "names",
-      key: "names",
+      dataIndex: "name",
+      key: "name",
     },
     {
       title: "Type",
@@ -42,9 +42,7 @@ const TransactionsTable = ({
   ];
 
   let filteredTransactions = transactions.filter((item) => {
-    const nameMatches = item.names
-      ?.toLowerCase()
-      .includes(search.toLowerCase());
+    const nameMatches = item.name?.toLowerCase().includes(search.toLowerCase());
     const typeMatches = item.type?.includes(typeFilter);
     return nameMatches && typeMatches;
   });
@@ -58,14 +56,14 @@ const TransactionsTable = ({
       return 0;
     }
   });
-  const dataSource = sortedTransactions.map((transaction, index) => ({
-    key: index,
-    ...transaction,
-  }));
+  // const dataSource = sortedTransactions.map((transaction, index) => ({
+  //   key: index,
+  //   ...transaction,
+  // }));
 
   const exportToCsv = () => {
-    const csv = unparse( {
-      fields: ["amount", "type", "names", "date",  "tag"],
+    const csv = unparse({
+      fields: ["name", "date", "type", "tag", "amount"],
       data: transactions,
     });
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -84,8 +82,11 @@ const TransactionsTable = ({
       parse(event.target.files[0], {
         header: true,
         complete: async function (results) {
+          const transactions = results.data.filter((transaction) => {
+            return Object.keys(transaction).every((key) => transaction[key] !== '');
+          });
           // Now results.data is an array of objects representing your CSV rows
-          for (const transaction of results.data) {
+          for (const transaction of transactions) {
             // Write each transaction to Firebase, you can use the addTransaction function here
             console.log("Transactions", transaction);
             const newTransaction = {
@@ -185,7 +186,7 @@ const TransactionsTable = ({
               />
             </div>
           </div>
-          <Table columns={columns} dataSource={dataSource} />
+          <Table columns={columns} dataSource={sortedTransactions} />
         </div>
       </div>
     </>
